@@ -2,12 +2,12 @@ import React from "react";
 import ReactDOM from "react-dom";
 import "./index.css";
 import App from "./App";
-import * as serviceWorker from "./serviceWorker";
 import { createStore, Store } from "redux";
+import * as PropTypes from "prop-types";
 
 const ADD_AGE = "ADD_AGE";
 
-function addAge() {
+export function addAge() {
   return {
     type: ADD_AGE,
   };
@@ -16,7 +16,7 @@ function addAge() {
 function ageApp(
   state: { age: number } = { age: 35 },
   action: { type: "ADD_AGE" }
-) {
+): { age: number } {
   if (action.type === ADD_AGE) {
     return {
       age: state.age + 1,
@@ -25,16 +25,25 @@ function ageApp(
   return state;
 }
 
-const store: Store<{ age: number }> = createStore(ageApp);
+const store = createStore<{ age: number }>(ageApp);
+
+class Provider extends React.Component<{ store: Store<{ age: number }> }, {}> {
+  static childContextTypes = {
+    store: PropTypes.object,
+  };
+  getChildContext() {
+    return {
+      store: this.props.store,
+    };
+  }
+  render() {
+    return this.props.children as JSX.Element;
+  }
+}
 
 ReactDOM.render(
-  <React.StrictMode>
+  <Provider store={store}>
     <App />
-  </React.StrictMode>,
-  document.getElementById("root")
+  </Provider>,
+  document.getElementById("root") as HTMLElement
 );
-
-// If you want your app to work offline and load faster, you can change
-// unregister() to register() below. Note this comes with some pitfalls.
-// Learn more about service workers: https://bit.ly/CRA-PWA
-serviceWorker.unregister();
